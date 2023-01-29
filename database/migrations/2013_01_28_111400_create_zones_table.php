@@ -1,0 +1,36 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create('zones', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->enum('type', ['province', 'city'])->default('city');
+            $table->foreignId('province_id')->constrained('zones')->cascadeOnUpdate();
+            $table->double('center_latitude')->nullable();
+            $table->double('center_longitude')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::dropIfExists('zones');
+    }
+};
