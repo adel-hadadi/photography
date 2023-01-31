@@ -7,6 +7,7 @@ use App\Models\Reservation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Laravel\Sanctum\Sanctum;
 use Tests\Feature\Concerns\TestingReservation;
@@ -89,6 +90,51 @@ class ReservationControllerTest extends TestCase
 
         $response->assertStatus(400)->assertJson(function (AssertableJson $json) {
             $json->where('code', 'CantAcceptReservation');
+            $json->etc();
+        });
+    }
+
+    public function testPhotographerCanAttachFileToReservation()
+    {
+        [$user, $photographer] = $this->makeUserAndPhotographer();
+        $reservation = Reservation::factory()->withUser($user)->withPhotographer($photographer)->accepted()->create();
+        Sanctum::actingAs($photographer);
+
+        $response = $this->post("api/attach-file/{$reservation->id}", [
+            'file' => UploadedFile::fake()->image('picture1.png')
+        ]);
+
+        $response->assertStatus(200)->assertJson(function (AssertableJson $json) use ($reservation, $photographer) {
+            $json->where('id', $reservation->id);
+            $json->where('photographer_id', $photographer->id);
+            $json->has('attachments');
+            $json->etc();
+        });
+    }
+
+    public function testPhotographerCantAttachFileToNotAcceptedReservation()
+    {
+        [$user, $photographer] = $this->makeUserAndPhotographer();
+        $reservation = Reservation::factory()->withUser($user)->withPhotographer($photographer)->create();
+        Sanctum::actingAs($photographer);
+
+        $response = $this->post("api/attach-file/{$reservation->id}", [
+            'file' => UploadedFile::fake()->image('picture1.png')
+        ]);
+
+        $response->assertStatus(400)->assertJson(function (AssertableJson $json) {
+            $json->where('code', 'CantAttachFile');
+            $json->etc();
+        });
+
+        $photographer2 = User::factory()->photographer()->create();
+        Sanctum::actingAs($photographer2);
+
+        $response = $this->post("api/attach-file/{$reservation->id}", [
+            'file' => UploadedFile::fake()->image('picture.png')
+        ]);
+        $response->assertStatus(400)->assertJson(function (AssertableJson $json) {
+            $json->where('code', 'DontHaveAccessToAttachFile');
             $json->etc();
         });
     }

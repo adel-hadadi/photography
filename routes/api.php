@@ -24,6 +24,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/edit-profile', [UserController::class, 'editProfile']);
     Route::post('/send-reservation-request/{photographer}', [ReservationController::class, 'sendReservationRequest']);
     Route::get('/accept-reservation/{reservation}', [ReservationController::class, 'acceptReservation']);
+    Route::post('/attach-file/{reservation}', [ReservationController::class, 'attachFilesToReservation']);
+
 });
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

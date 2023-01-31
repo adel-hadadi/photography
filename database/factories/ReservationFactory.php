@@ -26,17 +26,24 @@ class ReservationFactory extends Factory
         ];
     }
 
-    public function withUser(User $user):static
+    public function withUser(User $user): static
     {
-        return $this->state(fn () => [
+        return $this->state(fn() => [
             'user_id' => $user->id
         ]);
     }
 
-    public function withPhotographer(User $photographer):static
+    public function withPhotographer(User $photographer): static
     {
-        return $this->state(fn () => [
+        return $this->state(fn() => [
             'photographer_id' => $photographer->id
+        ]);
+    }
+
+    public function accepted(): static
+    {
+        return $this->state(fn() => [
+            'status' => ReservationStatus::ACCEPTED
         ]);
     }
 }

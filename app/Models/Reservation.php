@@ -21,4 +21,9 @@ class Reservation extends Model
     {
         return $this->belongsTo(User::class, 'photographer_id');
     }
+
+    public function attachments()
+    {
+        return $this->hasMany(ReservationAttachment::class);
+    }
 }
